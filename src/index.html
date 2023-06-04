@@ -1,0 +1,246 @@
+<html>
+    <head>
+        <title id="lyrics-name"></title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
+
+            .lyric-container{
+                font-size: 50px;
+                height: 100%;
+                text-align: center;
+                font-family: 'Roboto', sans-serif;
+                position: fixed;
+                width: 75%;
+                top: 0;
+                right: -100%;
+                overflow: auto;
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+                transition: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+                font-weight: bold;
+                text-shadow: #fff 0 0 20px;
+            }
+
+            .lyrics{
+                margin: 600px 0;
+            }
+
+            .lyric-container::-webkit-scrollbar {
+                display: none;
+            }
+
+            .song-info{
+                position: fixed;
+                font-family: 'Roboto', sans-serif;
+                width: 25%;
+                top: 0;
+                left: -100%;
+                height: 100%;
+                transition: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+            .song-image{
+                margin: 20px;
+                width: calc(100% - 40px);
+                box-shadow: #000 0 0 10px;
+            }
+
+            .song-bg{
+                position: fixed;
+                width: 25%;
+                height: 100%;
+                top: 0;
+                left: -100%;
+                filter: blur(20px);
+                opacity: 0.75;
+                z-index: -1;
+                transition: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+            .bg{
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                filter: blur(20px);
+                opacity: 0;
+                z-index: -2;
+                transition: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+            .song-title{
+                margin: 10px;
+                text-align: center;
+                color: white;
+                text-shadow: #000 0 0 10px;
+                font-size: 60px;
+            }
+
+            .song-artist{
+                margin: 10px;
+                text-align: center;
+                color: white;
+                text-shadow: #000 0 0 10px;
+            }
+
+            .player{
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                padding: 20px;
+            }
+
+            .progress{
+                width: calc(100% - 40px);
+                height: 10px;
+                background: linear-gradient(to right, transparent 0%, #575757 10%,  #575757 90%, transparent 100%);
+            }
+
+            .progress-child{
+                height: 10px;
+                background: linear-gradient(to right, transparent 0%, #0091b6 10%,  #0091b6 90%, transparent 100%);
+                transition: 0.5s;
+            }
+
+            .loading-box{
+                transition: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+                position: fixed;
+                top: -50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 75px;
+                font-family: 'Roboto', sans-serif;
+                rotate: 45deg;
+            }
+
+            .title{
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 20px;
+                background: #0005;
+                z-index: 100;
+                -webkit-app-region: drag;
+                opacity: 0;
+                transition: 0.1;
+            }
+
+            .title:hover{
+                opacity: 1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="title"></div>
+
+        <div class="song-info">
+            <div class="song-bg"></div>
+            <img class="song-image">
+
+            <div class="song-text">
+                <h1 class="song-title">Song Title</h1>
+                <h1 class="song-artist">Song Artist</h1>
+            </div>
+
+            <div class="player">
+                <div class="progress">
+                    <div class="progress-child"></div>
+                </div>
+            </div>            
+        </div>
+
+        <div class="lyric-container">
+            <div class="lyrics"></div>
+        </div>
+
+        <div class="loading-box">
+            Loading Song...
+        </div>
+
+        <div class="bg"></div>
+
+        <script>
+            let ws = new WebSocket('ws://127.0.0.1:40310');
+            let lerp = ( a, b, t ) => a + ( b - a ) * t;
+            let scroll = 0;
+            let scrollTarget = 0;
+
+            ws.onopen = () => {
+                console.log('Connected!');
+            }
+
+            ws.onmessage = ( data ) => {
+                let msg = JSON.parse(data.data);
+
+                if(msg.type === 'lyrics'){
+                    document.querySelector('.lyric-container').style.right = '0';
+                    document.querySelector('.song-info').style.left = '0';
+                    document.querySelector('.song-bg').style.left = '0';
+
+                    document.querySelector('.lyrics').innerText = msg.lyrics;
+                    console.log(msg.song)
+
+                    document.querySelector('.song-image').src = msg.song.result.header_image_url;
+                    document.querySelector('.song-title').innerText = msg.song.result.full_title.split('by')[0];
+                    document.querySelector('.song-artist').innerText = msg.song.result.full_title.split('by')[1];
+                    document.querySelector('.song-bg').style.background = 'url(\''+msg.song.result.header_image_url+'\') no-repeat';
+                    document.querySelector('.song-bg').style.backgroundSize = 'cover';
+                    document.querySelector('.song-bg').style.backgroundPosition = 'center';
+
+                    document.querySelector('.bg').style.background = 'url(\''+msg.song.result.header_image_url+'\') no-repeat';
+                    document.querySelector('.bg').style.backgroundSize = 'cover';
+                    document.querySelector('.bg').style.backgroundPosition = 'center';
+
+                    document.querySelector('.loading-box').style.top = '-50%';
+                    document.querySelector('.loading-box').style.rotate = '45deg';
+
+                    document.querySelector('#lyrics-name').innerHTML = msg.song.result.full_title;
+
+                    setTimeout(() => {
+                        document.querySelector('.bg').style.opacity = 0.35;
+                    }, 100);
+                }
+
+                if(msg.type === 'progress'){
+                    scrollTarget = msg.time * (document.querySelector('.lyric-container').scrollHeight - document.querySelector('.lyric-container').clientHeight / 2);
+                    document.querySelector('.progress-child').style.width = (msg.time * 100) +'%';
+                }
+
+                if(msg.type === 'newsong'){
+                    document.querySelector('.lyric-container').style.right = '-100%';
+                    document.querySelector('.song-info').style.left = '-100%';
+                    document.querySelector('.song-bg').style.left = '-100%';
+                    document.querySelector('.bg').style.opacity = 0;
+
+                    document.querySelector('.loading-box').innerHTML = 'Loading Song...';
+                    document.querySelector('.loading-box').style.top = '50%';
+                    document.querySelector('.loading-box').style.rotate = '0deg';
+
+                    document.querySelector('#lyrics-name').innerHTML = 'Loading Song...';
+                }
+
+                if(msg.type === 'cannotfind'){
+                    document.querySelector('.loading-box').style.top = '-50%';
+                    document.querySelector('.loading-box').style.rotate = '45deg';
+
+                    setTimeout(() => {
+                        document.querySelector('.loading-box').innerHTML = 'Cannot Find Song.';
+                        document.querySelector('.loading-box').style.top = '50%';
+                        document.querySelector('.loading-box').style.rotate = '0deg';
+                    }, 500);
+                }
+            }
+
+            let update = () => {
+                requestAnimationFrame(update);
+                scroll = lerp(scroll, scrollTarget, 0.1);
+                document.querySelector('.lyric-container').scrollTo(0, scroll);
+            }
+
+            update();
+        </script>
+    </body>
+</html>
