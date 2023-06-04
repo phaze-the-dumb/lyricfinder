@@ -115,5 +115,6 @@ app.on('ready', () => {
         frame: false
     })
 
+    win.setIgnoreMouseEvents(true);
     win.loadFile(__dirname + '/index.html');
 })
