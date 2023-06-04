@@ -23,6 +23,8 @@ server.on('connection', s => {
         sock.send(JSON.stringify({ type: 'lyrics', lyrics, song: singleData }));
 });
 
+server.on('error', () => app.quit());
+
 let showLyrics = () => {
     if(sock)
         sock.send(JSON.stringify({ type: 'lyrics', lyrics, song: singleData }));
@@ -107,8 +109,8 @@ let findSong = ( attempt ) => {
 
 app.on('ready', () => {
     let win = new BrowserWindow({
-        width: 1600,
-        height: 1200,
+        width: 1920,
+        height: 1080,
         transparent: true,
         frame: false
     })
