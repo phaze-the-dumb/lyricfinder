@@ -32,10 +32,10 @@ let showLyrics = () => {
 
 meta.on('ActivityUpdated', a => {
     if(
-        songName !== a.media.artist + ' - ' + a.media.title && a.media.title && a.media.artist && 
-        songName !== a.media.artist.split('(')[0].split('[')[0].trim() + ' - ' + a.media.title.split('(')[0].split('[')[0].trim()
+        songName !== a.media.songArtist + ' - ' + a.media.songTitle && a.media.songTitle && a.media.songArtist && 
+        songName !== a.media.songArtist.split('(')[0].split('[')[0].trim() + ' - ' + a.media.songTitle.split('(')[0].split('[')[0].trim()
     ){
-        songName = a.media.artist + ' - ' + a.media.title;
+        songName = a.media.songArtist + ' - ' + a.media.songTitle;
         console.log('New Song: '+songName);
 
         lyrics = null;
@@ -58,17 +58,17 @@ let findSong = ( attempt ) => {
             .then(data => data.json()).then(data => {
                 songData = data;
                 let song = songData.response.hits.find(x => (
-                    x.result.title_with_featured.toLowerCase() == currentActivity.media.title.toLowerCase() || 
-                    x.result.title.toLowerCase()               == currentActivity.media.title.toLowerCase()
+                    x.result.title_with_featured.toLowerCase() == currentActivity.media.songTitle.toLowerCase() || 
+                    x.result.title.toLowerCase()               == currentActivity.media.songTitle.toLowerCase()
                 ) && x.type === 'song');
 
                 if(!song)song = songData.response.hits.find(x => (
-                    x.result.title_with_featured.toLowerCase() == currentActivity.media.title.split('(')[0].split('[')[0].trim().toLowerCase() || 
-                    x.result.title.toLowerCase()               == currentActivity.media.title.split('(')[0].split('[')[0].trim().toLowerCase()
+                    x.result.title_with_featured.toLowerCase() == currentActivity.media.songTitle.split('(')[0].split('[')[0].trim().toLowerCase() || 
+                    x.result.title.toLowerCase()               == currentActivity.media.songTitle.split('(')[0].split('[')[0].trim().toLowerCase()
                 ) && x.type === 'song');
 
                 if(!song && attempt === 0){
-                    songName = currentActivity.media.artist.split('(')[0].split('[')[0].trim() + ' - ' + currentActivity.media.title.split('(')[0].split('[')[0].trim();
+                    songName = currentActivity.media.songArtist.split('(')[0].split('[')[0].trim() + ' - ' + currentActivity.media.songTitle.split('(')[0].split('[')[0].trim();
                     console.log('Testing Different Name: '+songName);
                     findSong(1);
                 }
@@ -112,7 +112,7 @@ app.on('ready', () => {
         width: 1920,
         height: 1080,
         transparent: true,
-        frame: false
+        frame: false,
     })
 
     win.setIgnoreMouseEvents(true);
